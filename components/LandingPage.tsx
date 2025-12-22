@@ -3,7 +3,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { User } from 'firebase/auth';
 
-const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
+interface LandingPageProps {
+  user: User | null;
+  onGetStarted: () => void;
+  demoUrl?: string;
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ user, onGetStarted, demoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }) => {
   return (
     <div className="bg-slate-50 min-h-screen">
       {/* Hero Section */}
@@ -30,14 +36,19 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
             ) : (
               <button 
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-indigo-200 transition-all"
-                onClick={() => document.getElementById('login-btn')?.click()}
+                onClick={onGetStarted}
               >
                 Get Started for Free
               </button>
             )}
-            <button className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg transition-all">
+            <a 
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg transition-all"
+              href={demoUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               Watch Demo
-            </button>
+            </a>
           </div>
 
           <div className="mt-20 relative">

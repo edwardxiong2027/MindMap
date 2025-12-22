@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import Editor from './components/Editor';
 import UserCenter from './components/UserCenter';
 import LoginModal from './components/LoginModal';
+import Footer from './components/Footer';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -44,7 +45,7 @@ const App: React.FC = () => {
         
         <main className="flex-grow flex flex-col min-h-0 overflow-hidden">
           <Routes>
-            <Route path="/" element={<LandingPage user={user} />} />
+            <Route path="/" element={<LandingPage user={user} onGetStarted={() => setShowLoginModal(true)} />} />
             <Route 
               path="/dashboard" 
               element={user ? <Dashboard user={user} /> : <Navigate to="/" />} 
@@ -59,6 +60,8 @@ const App: React.FC = () => {
             />
           </Routes>
         </main>
+
+        <Footer />
 
         {showLoginModal && (
           <LoginModal onClose={() => setShowLoginModal(false)} />

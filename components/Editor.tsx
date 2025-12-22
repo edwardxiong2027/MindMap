@@ -19,7 +19,16 @@ import ReactFlow, {
   ReactFlowProvider,
   MarkerType
 } from 'reactflow';
-import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  doc, 
+  onSnapshot, 
+  updateDoc, 
+  serverTimestamp,
+  arrayUnion,
+  arrayRemove,
+  getDoc,
+  setDoc
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { User } from 'firebase/auth';
 import { MindMapDoc, AIResponseNode } from '../types';
@@ -31,11 +40,12 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
   const { fitView } = useReactFlow();
   
   const [title, setTitle] = useState('');
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, _onNodesChange] = useNodesState([]);
+  const [edges, setEdges, _onEdgesChange] = useEdgesState([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isBrainstorming, setIsBrainstorming] = useState(false);
   const [brainstormTopic, setBrainstormTopic] = useState('');
+  const [collaborators, setCollaborators] = useState<string[]>([]);
   const skipNextUpdate = useRef(false);
 
   useEffect(() => {
@@ -45,6 +55,7 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
       if (snapshot.exists()) {
         const data = snapshot.data() as MindMapDoc;
         setTitle(data.title || 'Untitled Map');
+        setCollaborators(data.collaborators || []);
         if (!skipNextUpdate.current) {
           setNodes(data.nodes || []);
           setEdges(data.edges || []);
@@ -57,6 +68,43 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
 
     return () => unsubscribe();
   }, [mapId, setNodes, setEdges, navigate]);
+
+  // lightweight presence: add self on enter, remove on exit
+  useEffect(() => {
+    if (!mapId || !user) return;
+    const mapRef = doc(db, 'maps', mapId);
+
+    const join = async () => {
+      try {
+        const snap = await getDoc(mapRef);
+        if (!snap.exists()) {
+          await setDoc(mapRef, {
+            title: 'Untitled Map',
+            ownerId: user.uid,
+            nodes: [],
+            edges: [],
+            updatedAt: serverTimestamp(),
+            collaborators: [user.uid]
+          });
+        } else {
+          await updateDoc(mapRef, { collaborators: arrayUnion(user.uid) });
+        }
+      } catch (err) {
+        console.error('Failed to join collaborators list', err);
+      }
+    };
+
+    const leave = async () => {
+      try {
+        await updateDoc(mapRef, { collaborators: arrayRemove(user.uid) });
+      } catch (err) {
+        // ignore cleanup errors (e.g., doc deleted)
+      }
+    };
+
+    join();
+    return () => { leave(); };
+  }, [mapId, user]);
 
   const syncToFirebase = useCallback(async (newNodes: Node[], newEdges: Edge[]) => {
     if (!mapId) return;
@@ -205,6 +253,18 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const copyShareLink = async () => {
+    if (!mapId) return;
+    const shareUrl = `${window.location.origin}/#/editor/${mapId}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Share link copied!');
+    } catch (err) {
+      console.error(err);
+      alert('Copy failed. Try manually copying the URL.');
+    }
+  };
+
   return (
     <div className="flex-grow flex flex-col min-h-0 bg-slate-50 relative overflow-hidden">
       {/* Top Bar */}
@@ -221,6 +281,24 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
         </div>
 
         <div className="flex items-center gap-3">
+           <div className="hidden sm:flex items-center gap-2 pr-3 border-r border-slate-200">
+             <div className="flex -space-x-2">
+               {collaborators.slice(0,4).map((uid) => (
+                 <img 
+                   key={uid}
+                   src={`https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(uid.slice(0,2).toUpperCase())}`}
+                   alt={uid === user.uid ? 'You' : uid}
+                   className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                   title={uid === user.uid ? 'You' : uid}
+                 />
+               ))}
+               {collaborators.length > 4 && (
+                 <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white text-xs font-bold text-slate-600 flex items-center justify-center">+{collaborators.length - 4}</div>
+               )}
+             </div>
+             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">Live</span>
+           </div>
+
            <div className="hidden md:flex items-center bg-slate-50 rounded-xl p-1 border border-slate-200 focus-within:border-indigo-400 transition-colors">
              <input 
                type="text" 
@@ -245,6 +323,13 @@ const EditorContent: React.FC<{ user: User }> = ({ user }) => {
            >
              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
              Add Node
+           </button>
+
+           <button 
+             onClick={copyShareLink}
+             className="bg-indigo-50 text-indigo-700 border border-indigo-100 hover:border-indigo-300 px-3 py-2 rounded-lg text-xs font-bold transition-all"
+           >
+             Copy Invite
            </button>
         </div>
       </div>

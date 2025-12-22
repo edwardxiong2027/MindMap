@@ -21,13 +21,15 @@ export interface MindMapEdge {
   animated?: boolean;
 }
 
+import { Timestamp } from 'firebase/firestore';
+
 export interface MindMapDoc {
   id: string;
   title: string;
   ownerId: string;
   nodes: MindMapNode[];
   edges: MindMapEdge[];
-  updatedAt: number;
+  updatedAt: Timestamp | number | null;
   collaborators: string[];
 }
 

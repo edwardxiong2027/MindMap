@@ -43,7 +43,7 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
         ],
         edges: [],
         updatedAt: serverTimestamp(),
-        collaborators: []
+        collaborators: [user.uid]
       });
       navigate(`/editor/${docRef.id}`);
     } catch (error) {
@@ -109,7 +109,11 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 mb-1 truncate pr-8">{map.title}</h3>
                 <p className="text-sm text-slate-400">
-                  Updated {new Date(map.updatedAt).toLocaleDateString()}
+                  {(() => {
+                    const ts = (map as any).updatedAt;
+                    const date = ts?.toDate ? ts.toDate() : ts ? new Date(ts) : null;
+                    return date ? `Updated ${date.toLocaleDateString()}` : 'Not yet saved';
+                  })()}
                 </p>
                 <div className="mt-4 flex -space-x-2">
                    <img src={`https://ui-avatars.com/api/?name=${user.displayName}`} className="w-6 h-6 rounded-full border-2 border-white" alt="Owner" />

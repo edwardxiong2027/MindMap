@@ -3,14 +3,14 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Note: Using placeholder config. In a real app, these are provided by the environment.
+// Production config for MindMap on Firebase Hosting
 const firebaseConfig = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "mindmap-pro-demo.firebaseapp.com",
-  projectId: "mindmap-pro-demo",
-  storageBucket: "mindmap-pro-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdefghijk"
+  apiKey: "AIzaSyCXEtq0ubgtXIbb7s_JzoWt8daNejKwuLQ",
+  authDomain: "mindmap-9f454.firebaseapp.com",
+  projectId: "mindmap-9f454",
+  storageBucket: "mindmap-9f454.firebasestorage.app",
+  messagingSenderId: "582191293462",
+  appId: "1:582191293462:web:a0789ceeff4efafa538137"
 };
 
 // Initialize Firebase
