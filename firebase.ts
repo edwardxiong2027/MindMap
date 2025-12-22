@@ -5,13 +5,17 @@ import { getFirestore } from 'firebase/firestore';
 
 // Production config for MindMap on Firebase Hosting
 const firebaseConfig = {
-  apiKey: "AIzaSyCXEtq0ubgtXIbb7s_JzoWt8daNejKwuLQ",
+  apiKey: (import.meta as any).env?.VITE_FIREBASE_API_KEY || "",
   authDomain: "mindmap-9f454.firebaseapp.com",
   projectId: "mindmap-9f454",
   storageBucket: "mindmap-9f454.firebasestorage.app",
   messagingSenderId: "582191293462",
   appId: "1:582191293462:web:a0789ceeff4efafa538137"
 };
+
+if (!firebaseConfig.apiKey) {
+  throw new Error("Missing VITE_FIREBASE_API_KEY");
+}
 
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
