@@ -1,0 +1,5 @@
+{
+  "name": "MindMap Pro",
+  "description": "A high-performance, AI-powered visual brainstorming tool designed for professional ideation. Features real-time collaboration, seamless Firebase integration, and advanced node-based mind mapping with Gemini-powered brainstorming assistance.",
+  "requestFramePermissions": []
+}
