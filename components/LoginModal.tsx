@@ -6,7 +6,7 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile 
 } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../firebase';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -19,8 +19,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isFirebaseReady = Boolean(isFirebaseConfigured && auth && googleProvider);
 
   const handleGoogleLogin = async () => {
+    if (!isFirebaseReady) {
+      setError('Firebase is not configured. Set VITE_FIREBASE_API_KEY in .env.local.');
+      return;
+    }
     try {
       await signInWithPopup(auth, googleProvider);
       onClose();
@@ -31,6 +36,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isFirebaseReady) {
+      setError('Firebase is not configured. Set VITE_FIREBASE_API_KEY in .env.local.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -63,7 +72,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
 
           <button 
             onClick={handleGoogleLogin}
-            className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all mb-6"
+            disabled={!isFirebaseReady}
+            className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
             Continue with Google
@@ -115,11 +125,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ onClose }) => {
               />
             </div>
 
+            {!isFirebaseReady && (
+              <p className="text-amber-600 text-sm font-medium">
+                Firebase is not configured. Add VITE_FIREBASE_API_KEY to .env.local to enable sign-in.
+              </p>
+            )}
             {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
 
             <button 
               type="submit"
-              disabled={loading}
+              disabled={loading || !isFirebaseReady}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
             >
               {loading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}

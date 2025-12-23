@@ -4,8 +4,11 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Production config for MindMap on Firebase Hosting
+const firebaseApiKey = (import.meta as any).env?.VITE_FIREBASE_API_KEY || "";
+const isFirebaseConfigured = Boolean(firebaseApiKey);
+
 const firebaseConfig = {
-  apiKey: (import.meta as any).env?.VITE_FIREBASE_API_KEY || "",
+  apiKey: firebaseApiKey,
   authDomain: "mindmap-9f454.firebaseapp.com",
   projectId: "mindmap-9f454",
   storageBucket: "mindmap-9f454.firebasestorage.app",
@@ -13,16 +16,14 @@ const firebaseConfig = {
   appId: "1:582191293462:web:a0789ceeff4efafa538137"
 };
 
-if (!firebaseConfig.apiKey) {
-  throw new Error("Missing VITE_FIREBASE_API_KEY");
-}
-
 // Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const app = isFirebaseConfigured
+  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
+  : null;
 
 // Initialize services with the explicit app instance
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
+const googleProvider = app ? new GoogleAuthProvider() : null;
 
-export { auth, db, googleProvider };
+export { auth, db, googleProvider, isFirebaseConfigured };
