@@ -5,15 +5,28 @@ import { getFirestore } from 'firebase/firestore';
 
 // Production config for MindMap on Firebase Hosting
 const firebaseApiKey = (import.meta as any).env?.VITE_FIREBASE_API_KEY || "";
-const isFirebaseConfigured = Boolean(firebaseApiKey);
+const firebaseAuthDomain = (import.meta as any).env?.VITE_FIREBASE_AUTH_DOMAIN || "";
+const firebaseProjectId = (import.meta as any).env?.VITE_FIREBASE_PROJECT_ID || "";
+const firebaseStorageBucket = (import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || "";
+const firebaseMessagingSenderId = (import.meta as any).env?.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
+const firebaseAppId = (import.meta as any).env?.VITE_FIREBASE_APP_ID || "";
+
+const isFirebaseConfigured = Boolean(
+  firebaseApiKey &&
+  firebaseAuthDomain &&
+  firebaseProjectId &&
+  firebaseStorageBucket &&
+  firebaseMessagingSenderId &&
+  firebaseAppId
+);
 
 const firebaseConfig = {
   apiKey: firebaseApiKey,
-  authDomain: "mindmap-9f454.firebaseapp.com",
-  projectId: "mindmap-9f454",
-  storageBucket: "mindmap-9f454.firebasestorage.app",
-  messagingSenderId: "582191293462",
-  appId: "1:582191293462:web:a0789ceeff4efafa538137"
+  authDomain: firebaseAuthDomain,
+  projectId: firebaseProjectId,
+  storageBucket: firebaseStorageBucket,
+  messagingSenderId: firebaseMessagingSenderId,
+  appId: firebaseAppId
 };
 
 // Initialize Firebase
